@@ -23,7 +23,7 @@ type Version struct {
 
 type Versions []Version
 
-var URL = "http://convox.s3.amazonaws.com/release/versions.json"
+var URL = "https://convox.s3.amazonaws.com/release/versions.json"
 
 func (vs Versions) Resolve(version string) (v Version, err error) {
 	switch {
@@ -39,7 +39,7 @@ func (vs Versions) Resolve(version string) (v Version, err error) {
 
 // Get all versions as Versions type
 func All() (Versions, error) {
-	res, err := http.Get("http://convox.s3.amazonaws.com/release/versions.json")
+	res, err := http.Get(URL)
 
 	if err != nil {
 		return nil, err
