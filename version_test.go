@@ -2,6 +2,8 @@ package version
 
 import (
 	"fmt"
+	"net/http"
+	"net/http/httptest"
 	"sort"
 	"testing"
 
@@ -203,4 +205,16 @@ func TestSortVersions(t *testing.T) {
 
 	assert.Equal(t, "1", vs[0].Version)
 	assert.Equal(t, "2", vs[1].Version)
+}
+
+func TestUnmarshalError(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintln(w, "not json")
+	}))
+	defer ts.Close()
+
+	URL = ts.URL
+
+	_, err := All()
+	assert.EqualError(t, err, "invalid character 'o' in literal null (expecting 'u')")
 }

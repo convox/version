@@ -23,6 +23,8 @@ type Version struct {
 
 type Versions []Version
 
+var URL = "http://convox.s3.amazonaws.com/release/versions.json"
+
 func (vs Versions) Resolve(version string) (v Version, err error) {
 	switch {
 	case version == "latest" || version == "stable":
@@ -52,7 +54,10 @@ func All() (Versions, error) {
 	}
 
 	vs := Versions{}
-	json.Unmarshal(b, &vs)
+	err = json.Unmarshal(b, &vs)
+	if err != nil {
+		return nil, err
+	}
 
 	return vs, nil
 }
