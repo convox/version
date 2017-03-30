@@ -192,6 +192,45 @@ func (vs Versions) Next(curr string) (string, error) {
 	return "", fmt.Errorf("current version %q is latest", curr)
 }
 
+// NextCertified takes a version from either the certified or
+// uncertified versions list, and returns the next certified version
+func (vs Versions) NextCertified(uvs Versions, curr string) (string, error) {
+	// if curr is a certified version, use Next()
+	ver, err := vs.Next(curr)
+	if err == nil {
+		return ver, nil
+	}
+
+	if strings.Contains(err.Error(), "is latest") {
+		return "", err
+	}
+
+	// if curr is not an uncertified version, return error
+	_, err = uvs.Find(curr)
+	if err != nil {
+		return "", fmt.Errorf("current version %q not found", curr)
+	}
+
+	// curr is an uncertified version, find next certified version lexically
+	// curr is less than first certified version
+	if strings.Compare(curr, vs[0].Version) == -1 {
+		return vs[0].Version, nil
+	}
+
+	// curr is greater than last certified version
+	if strings.Compare(curr, vs[vs.Len()-1].Version) == 1 {
+		return "", fmt.Errorf("current version %q not found", curr)
+	}
+
+	for _, ver := range vs {
+		if strings.Compare(curr, ver.Version) == 1 {
+			return vs.Next(ver.Version)
+		}
+	}
+
+	return "", fmt.Errorf("current version %q not found", curr)
+}
+
 // Walk a bucket to create initial versions.json file
 func importVersions() (Versions, error) {
 	S3 := s3.New(session.New(), &aws.Config{

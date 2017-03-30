@@ -218,3 +218,83 @@ func TestUnmarshalError(t *testing.T) {
 	_, err := All()
 	assert.EqualError(t, err, "invalid character 'o' in literal null (expecting 'u')")
 }
+
+func TestChannels(t *testing.T) {
+	edge := Versions{
+		Version{
+			Version:   "0321",
+			Published: false,
+		},
+		Version{
+			Version:   "0324",
+			Published: true,
+		},
+		Version{
+			Version:   "0325",
+			Published: false,
+		},
+		Version{
+			Version:   "0326",
+			Published: true,
+		},
+		Version{
+			Version:   "0327",
+			Published: true,
+		},
+		Version{
+			Version:   "0328",
+			Published: false,
+		},
+	}
+
+	certified := Versions{
+		Version{
+			Version:   "0324",
+			Published: true,
+		},
+		Version{
+			Version:   "0327",
+			Published: true,
+		},
+	}
+
+	// from unknown to certified
+	next, err := certified.NextCertified(edge, "0320")
+	assert.EqualError(t, err, `current version "0320" not found`)
+	assert.Equal(t, "", next)
+
+	// from certified to certified
+	next, err = certified.NextCertified(edge, "0324")
+	assert.NoError(t, err)
+	assert.Equal(t, "0327", next)
+
+	next, err = certified.NextCertified(edge, "0327")
+	assert.EqualError(t, err, `current version "0327" is latest`)
+	assert.Equal(t, "", next)
+
+	next, err = certified.NextCertified(edge, "0329")
+	assert.EqualError(t, err, `current version "0329" not found`)
+	assert.Equal(t, "", next)
+
+	// from uncertified to certified
+	next, err = certified.NextCertified(edge, "0321")
+	assert.NoError(t, err)
+	assert.Equal(t, "0324", next)
+
+	next, err = certified.NextCertified(edge, "0324")
+	assert.NoError(t, err)
+	assert.Equal(t, "0327", next)
+
+	next, err = certified.NextCertified(edge, "0325")
+	assert.NoError(t, err)
+	assert.Equal(t, "0327", next)
+
+	next, err = certified.NextCertified(edge, "0326")
+	assert.NoError(t, err)
+	assert.Equal(t, "0327", next)
+
+	next, err = certified.NextCertified(edge, "0328")
+	assert.EqualError(t, err, `current version "0328" not found`)
+	assert.Equal(t, "", next)
+
+}
