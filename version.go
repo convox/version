@@ -23,10 +23,7 @@ type Version struct {
 
 type Versions []Version
 
-var (
-	defaultURL = "https://convox.s3.amazonaws.com/release/versions.json"
-	URL        = defaultURL
-)
+var defaultURL = "https://convox.s3.amazonaws.com/release/versions.json"
 
 func (vs Versions) Resolve(version string) (v Version, err error) {
 	switch {
@@ -40,12 +37,12 @@ func (vs Versions) Resolve(version string) (v Version, err error) {
 	return
 }
 
-// Get all versions as Versions type
-func All() (Versions, error) {
-	if URL == "" {
-		URL = defaultURL
+// Get all versions as Versions type from the provided URL. If empty, default URL is used.
+func All(url string) (Versions, error) {
+	if url == "" {
+		url = defaultURL
 	}
-	res, err := http.Get(URL)
+	res, err := http.Get(url)
 
 	if err != nil {
 		return nil, err
