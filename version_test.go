@@ -114,8 +114,8 @@ func TestNext(t *testing.T) {
 	}
 
 	next, err := vs.Next("10")
-	assert.Equal(t, "", next)
-	assert.EqualError(t, err, `current version "10" not found`)
+	assert.Equal(t, "8", next, "version 10 not found, use latest version is 8")
+	assert.Nil(t, err)
 
 	next, err = vs.Next("1")
 	assert.Equal(t, "4", next, "from version 1, next required version is 4")
